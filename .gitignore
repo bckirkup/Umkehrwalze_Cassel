@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+.env
+data/*.sqlite
+data/*.sqlite-journal
+outputs/
+*.log
+*.egg-info/
+dist/
+build/

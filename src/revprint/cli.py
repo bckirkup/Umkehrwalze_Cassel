@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from revprint.batch_pipeline import run_batch_pipeline
 from revprint.config import load_settings
 from revprint.htr_templates import scaffold_htr_sidecars
 from revprint.io_scan import scan_jpegs
@@ -105,6 +106,25 @@ def _cmd_process_proof(args: argparse.Namespace) -> int:
     print(f"reproduction_pdf={run.reproduction_pdf}")
     print(f"translation_pdf={run.translation_pdf}")
     print(f"manifest={run.manifest_path}")
+    return 0
+
+
+def _cmd_batch(args: argparse.Namespace) -> int:
+    input_root = _input_root_path(args)
+    result = run_batch_pipeline(
+        input_root=input_root,
+        output_root=args.output_root,
+        json_path=args.json,
+        n_jobs=args.n_jobs,
+        prefer_gpu=not args.no_gpu,
+    )
+    print(f"run_id={result.run_id}")
+    print(f"output_dir={result.output_dir}")
+    print(f"pages={result.page_count}")
+    print(f"success={result.success_count}")
+    print(f"errors={result.error_count}")
+    print(f"flagged={result.flagged_count}")
+    print(f"elapsed={result.total_elapsed_sec:.1f}s")
     return 0
 
 
@@ -348,6 +368,35 @@ def build_parser() -> argparse.ArgumentParser:
     s_htr_scaffold.add_argument("--pages-dir", type=Path, required=True)
     s_htr_scaffold.add_argument("--overwrite", action="store_true")
     s_htr_scaffold.set_defaults(func=_cmd_htr_scaffold)
+
+    s_batch = sub.add_parser(
+        "batch",
+        help="Run the full batch cleaning pipeline on all images in input root.",
+    )
+    s_batch.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("outputs/batch"),
+        help="Root directory for batch run outputs.",
+    )
+    s_batch.add_argument(
+        "--json",
+        type=Path,
+        default=None,
+        help="Path to archive export JSON for metadata enrichment.",
+    )
+    s_batch.add_argument(
+        "--n-jobs",
+        type=int,
+        default=-1,
+        help="Number of parallel workers (-1 = all CPUs).",
+    )
+    s_batch.add_argument(
+        "--no-gpu",
+        action="store_true",
+        help="Disable GPU acceleration even if available.",
+    )
+    s_batch.set_defaults(func=_cmd_batch)
 
     s_gui = sub.add_parser("gui", help="Start the lightweight local proof web GUI.")
     s_gui.add_argument("--host", default="127.0.0.1")

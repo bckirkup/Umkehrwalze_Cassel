@@ -1,31 +1,40 @@
-# Sample Pages For GitHub Documentation
+# Sample Pages
 
-This project includes two representative sample pages from the working corpus so contributors can see what the pipeline starts with and what it should produce.
-
-## Public-domain status
-
-The manuscript images used here are 18th-century historical documents and are not under modern copyright protection. In plain terms: these pages are public-domain records, certainly not copyrighted by King George.
-
-We still preserve source attribution and provenance metadata for archival integrity.
+This project processes 18th-century historical manuscript pages from the Hessisches Staatsarchiv Marburg.  The source images are public-domain records.
 
 ## Recommended sample inputs
 
-- `HerrBenjaminKirkup/hstam_4_h_nr_4138_0002.jpg`
-- `HerrBenjaminKirkup/hstam_4_h_nr_4138_0003.jpg`
+Place scans under your `RPK_INPUT_ROOT` directory (see `.env.example`).  The expected filename pattern is:
 
-## What users should expect to generate
+```
+hstam_4_h_nr_4156_NNNN.jpg
+```
 
-After running `revprint process-proof` (or GUI proof processing), these key artifacts are expected:
+where `NNNN` is the four-digit scan number.
 
-- `pages/*.cleaned_gray.png` (ink-on-white)
+## Expected outputs
+
+After running `revprint batch` (or `revprint process-proof`), these key artifacts are generated per page:
+
+- `pages/{stem}.stamp_cleaned.png` — stamp regions inpainted
+- `pages/{stem}.flattened.png` — illumination normalised
+- `pages/{stem}.adaptive_cleaned.png` — ink-on-white via adaptive binarisation
+- `pages/{stem}.dewarped.png` — text-line curvature corrected
+- `pages/{stem}.ghost_cleaned.png` — bleed-through suppressed
+
+Plus batch-level outputs:
+- `corpus_stats.json` — paper/ink distributions and stamp colour centroids
+- `batch_manifest.json` — per-page QA metrics and processing metadata
+
+For the legacy proof pipeline:
+- `pages/*.cleaned_gray.png` — ink-on-white
 - `pages/*.edge_inpaint_mask.png`
-- `interactions/*.interaction_*_mirror_mask.png`
-- `pages/*.plausibility_map.png`
 - `pdf/reproduction_proof.pdf`
 - `pdf/translation_proof.pdf`
 
-## Suggested walkthrough for contributors
+## Suggested review workflow
 
-1. Compare each source sample to `cleaned_gray`.
-2. Review `interaction` and `plausibility` artifacts for suppression safety.
-3. Open both proof PDFs and confirm readability and layout.
+1. Compare source scan to the final `ghost_cleaned.png`.
+2. Check `batch_manifest.json` for flagged pages (high ink coverage, low brightness uniformity).
+3. Review stamp masks (`*.stamp_mask.png`) for false positives.
+4. Open reproduction PDF and confirm readability.

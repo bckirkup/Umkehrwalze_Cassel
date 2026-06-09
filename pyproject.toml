@@ -10,13 +10,17 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "flask>=3.0.0",
+    "joblib>=1.3.0",
     "numpy>=1.24.0",
     "opencv-python-headless>=4.8.0",
     "pillow>=10.0.0",
     "pydantic-settings>=2.0.0",
+    "rapidfuzz>=3.0.0",
     "reportlab>=4.0.0",
     "scikit-image>=0.22.0",
+    "scikit-learn>=1.3.0",
     "scipy>=1.11.0",
+    "tifffile>=2023.7.0",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +31,10 @@ dev = [
 ]
 ocr = [
     "pytesseract>=0.3.10",
+]
+gpu = [
+    "torch>=2.1.0",
+    "kornia>=0.7.0",
 ]
 
 [project.scripts]

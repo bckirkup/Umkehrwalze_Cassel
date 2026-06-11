@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from revprint.content_mask import apply_content_mask, compute_content_mask
+
 
 def _pil_to_bgr(pil_rgb: Image.Image) -> np.ndarray:
     return cv2.cvtColor(np.asarray(pil_rgb.convert("RGB"), dtype=np.uint8), cv2.COLOR_RGB2BGR)
@@ -113,6 +115,12 @@ def refine_to_grayscale(pil_rgb: Image.Image) -> tuple[Image.Image, Image.Image]
     m2 = (edge_ribbon & dark1 & ~ink1).astype(np.uint8) * 255
     m2 = cv2.dilate(m2, np.ones((3, 3), np.uint8), iterations=1)
     g2 = cv2.inpaint(g1, m2, 5, cv2.INPAINT_NS) if int(m2.max()) > 0 else g1
+
+    # Mask non-paper regions (binding shadow, ragged edges, scanner bed)
+    # to paper-white *before* ink extraction so they don't survive as
+    # false strokes in _ink_on_white().
+    content = compute_content_mask(g2)
+    g2 = apply_content_mask(g2, content)
 
     combined = np.clip(m1.astype(np.int32) + m2.astype(np.int32), 0, 255).astype(np.uint8)
     print_gray = _ink_on_white(g2)

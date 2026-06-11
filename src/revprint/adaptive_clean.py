@@ -105,6 +105,13 @@ def extract_ink_on_white(
     """
     mask = sauvola_ink_mask(gray, window_size=window_size, k=k, prefer_gpu=prefer_gpu)
 
+    # Suppress ink detections in the page-edge region (binding shadow,
+    # ragged paper edges, scanner bed) so they don't appear as strokes.
+    from revprint.content_mask import compute_content_mask
+
+    content = compute_content_mask(gray)
+    mask = mask * content
+
     # Local background estimate via large Gaussian blur.
     bg = cv2.GaussianBlur(gray.astype(np.float32), (0, 0), sigmaX=40.0)
     bg = np.clip(bg, 1.0, 255.0)

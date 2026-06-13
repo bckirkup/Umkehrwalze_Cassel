@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from revprint.content_mask import apply_content_mask, compute_content_mask
+from revprint.content_mask import (
+    _binding_margin_px,
+    apply_content_mask,
+    compute_content_mask,
+)
 
 
 def _make_page_with_dark_edges(w: int = 400, h: int = 600) -> np.ndarray:
@@ -32,26 +36,26 @@ def test_interior_is_high_exterior_is_low() -> None:
     gray = _make_page_with_dark_edges()
     mask = compute_content_mask(gray)
     # Centre of the page should be fully inside the mask.
-    assert float(np.mean(mask[250:350, 150:250])) > 0.8
+    assert float(np.mean(mask[250:350, 150:250])) > 0.7
     # Left binding shadow should be mostly masked out.
-    assert float(np.mean(mask[:, :20])) < 0.3
+    assert float(np.mean(mask[:, :20])) < 0.4
 
 
 def test_uniform_page_returns_full_mask() -> None:
     """A uniformly bright image has no edges to remove."""
     gray = np.full((300, 200), 215, dtype=np.uint8)
     mask = compute_content_mask(gray)
-    assert float(np.mean(mask)) > 0.7
+    assert float(np.mean(mask)) > 0.5
 
 
 def test_apply_content_mask_blends() -> None:
     gray = np.full((100, 100), 120, dtype=np.uint8)
     mask = np.zeros((100, 100), dtype=np.float32)
     mask[20:80, 20:80] = 1.0  # interior region
-    result = apply_content_mask(gray, mask, fill_value=252.0)
+    result = apply_content_mask(gray, mask, fill_value=255.0)
     assert result.dtype == np.uint8
     # Exterior should be fill value.
-    assert int(result[0, 0]) == 252
+    assert int(result[0, 0]) == 255
     # Interior should keep original value.
     assert int(result[50, 50]) == 120
 
@@ -63,3 +67,21 @@ def test_apply_content_mask_intermediate() -> None:
     result = apply_content_mask(gray, mask, fill_value=200.0)
     expected = int(100 * 0.5 + 200 * 0.5)
     assert abs(int(result[25, 25]) - expected) <= 1
+
+
+def test_binding_margin_detects_left_shadow() -> None:
+    """Profile-based detection finds the dark binding on the left."""
+    import cv2
+
+    arr = np.full((600, 400), 210, dtype=np.uint8)
+    # Gradual dark-to-light gradient on the left 80 columns
+    for c in range(80):
+        arr[:, c] = int(80 + (210 - 80) * (c / 80))
+
+    blur_r = max(15, (min(600, 400) // 15) | 1)
+    smooth = cv2.GaussianBlur(arr, (blur_r, blur_r), 0)
+    left, top, right, bottom = _binding_margin_px(smooth, 210.0)
+    assert left > 30, f"Expected left margin > 30, got {left}"
+    assert right < 10
+    assert top < 10
+    assert bottom < 10

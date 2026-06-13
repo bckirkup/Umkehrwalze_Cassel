@@ -116,13 +116,17 @@ def refine_to_grayscale(pil_rgb: Image.Image) -> tuple[Image.Image, Image.Image]
     m2 = cv2.dilate(m2, np.ones((3, 3), np.uint8), iterations=1)
     g2 = cv2.inpaint(g1, m2, 5, cv2.INPAINT_NS) if int(m2.max()) > 0 else g1
 
-    # Mask non-paper regions (binding shadow, ragged edges, scanner bed)
-    # to paper-white *before* ink extraction so they don't survive as
-    # false strokes in _ink_on_white().
-    content = compute_content_mask(g2)
-    g2 = apply_content_mask(g2, content)
-
     combined = np.clip(m1.astype(np.int32) + m2.astype(np.int32), 0, 255).astype(np.uint8)
     print_gray = _ink_on_white(g2)
+
+    # Mask non-paper regions (binding shadow, ragged edges, scanner bed)
+    # to white *after* ink extraction.  Applying the mask before
+    # _ink_on_white() causes division-normalization artifacts at the
+    # mask boundary (the σ=35 Gaussian blur of _normalize_paper_to_white
+    # sees the step from original pixels to fill-white and creates a
+    # false edge).  Masking the final output avoids this.
+    content = compute_content_mask(g2)
+    print_gray = apply_content_mask(print_gray, content)
+
     mask_debug = Image.fromarray(combined, mode="L")
     return Image.fromarray(print_gray, mode="L"), mask_debug

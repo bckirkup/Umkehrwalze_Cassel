@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PIL import Image
+from tqdm import tqdm
 
 from revprint.cloud_runtime import build_local_cloud_manifest
 from revprint.config import Settings, load_settings
@@ -437,7 +438,9 @@ def run_proof(
     processed: list[ProcessedPage] = []
     page_records: list[dict[str, object]] = []
     phrase_memory_state: dict[str, int] = {}
-    for source in selected:
+    pbar = tqdm(selected, desc="Processing pages", unit="page")
+    for source in pbar:
+        pbar.set_postfix_str(source.name, refresh=True)
         job_id = store.upsert_file(source, JobState.PENDING)
         store.update_state(job_id, JobState.PROCESSING)
         try:

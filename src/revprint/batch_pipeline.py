@@ -20,6 +20,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 from revprint.adaptive_clean import adaptive_clean_page
 from revprint.corpus_stats import CorpusStats, compute_corpus_stats
@@ -280,18 +281,36 @@ def run_batch_pipeline(
     # When using GPU, limit parallelism to avoid GPU memory contention.
     effective_jobs = 1 if prefer_gpu else n_jobs
 
-    results: list[PageResult] = Parallel(n_jobs=effective_jobs, backend="loky")(
-        delayed(_process_single_page)(
-            source_path=pi.path,
-            output_dir=output_dir,
-            scan_number=pi.scan_number,
-            side=pi.side,
-            facing_path=pi.facing_path,
-            corpus_stats=stats,
-            prefer_gpu=prefer_gpu,
+    if effective_jobs == 1:
+        # Sequential mode: show a live progress bar with current filename.
+        results: list[PageResult] = []
+        pbar = tqdm(model.pages, desc="Batch processing", unit="page")
+        for pi in pbar:
+            pbar.set_postfix_str(pi.path.name, refresh=True)
+            results.append(
+                _process_single_page(
+                    source_path=pi.path,
+                    output_dir=output_dir,
+                    scan_number=pi.scan_number,
+                    side=pi.side,
+                    facing_path=pi.facing_path,
+                    corpus_stats=stats,
+                    prefer_gpu=prefer_gpu,
+                )
+            )
+    else:
+        results = Parallel(n_jobs=effective_jobs, backend="loky")(
+            delayed(_process_single_page)(
+                source_path=pi.path,
+                output_dir=output_dir,
+                scan_number=pi.scan_number,
+                side=pi.side,
+                facing_path=pi.facing_path,
+                corpus_stats=stats,
+                prefer_gpu=prefer_gpu,
+            )
+            for pi in tqdm(model.pages, desc="Batch processing", unit="page")
         )
-        for pi in model.pages
-    )
 
     # Phase 4: Aggregate QA.
     success_count = sum(1 for r in results if r.error is None)

@@ -41,14 +41,12 @@ def estimate_illumination_1d(
     -------
     illum_1d : float32 array of shape (w,), per-column illumination estimate
     """
-    h, w = gray.shape
+    _, w = gray.shape
     col_profile = np.percentile(gray.astype(np.float32), percentile, axis=0)
     sigma_px = max(3.0, smooth_sigma * w)
     # Gaussian smoothing of the 1D profile.
     kernel_size = int(sigma_px * 6) | 1
-    col_smooth = cv2.GaussianBlur(
-        col_profile.reshape(1, -1), (kernel_size, 1), sigma_px
-    ).ravel()
+    col_smooth = cv2.GaussianBlur(col_profile.reshape(1, -1), (kernel_size, 1), sigma_px).ravel()
     return col_smooth
 
 

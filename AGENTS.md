@@ -1,5 +1,5 @@
 # AGENTS.md — AI Agent Guidelines for Umkehrwalze_Cassel (revprint)
-
+  
 ## Repository Purpose
 Image processing pipeline for historical manuscript digitisation. Transforms
 raw archival scans (JPEG) into clean ink-on-white reproductions suitable for
@@ -8,15 +8,22 @@ ledgers from the Hessisches Staatsarchiv Marburg.
 
 ## Setup
 ```bash
-pip install -e ".[dev]"          # CPU (CI / development)
-pip install -e ".[dev,gpu]"      # GPU-accelerated (local production with CUDA)
+uv sync --locked --no-build --no-binary-package revprint --extra dev
+pre-commit install
 ```
+
+## Before Editing
+- Read `.agents/skills/sonar-quality/SKILL.md` before writing or changing code.
 
 ## Validation Commands
 Run these before committing:
 ```bash
-ruff check src tests
-python -m pytest --no-cov
+pre-commit run --all-files
+python scripts/sonar_guard.py src tests
+python scripts/sonar_guard.py --workflows .github/workflows
+uv run --no-sync --no-build ruff check src/ tests/
+uv run --no-sync --no-build ruff format --check src/ tests/
+uv run --no-sync --no-build pytest --strict-markers -ra
 ```
 
 ## Architecture Rules

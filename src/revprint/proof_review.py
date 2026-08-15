@@ -37,7 +37,11 @@ def build_proof_review_rubric(markdown_title: str, manifest_path: Path) -> str:
 
 def write_proof_review_rubric(manifest_path: Path, output_path: Path | None = None) -> Path:
     man = Path(manifest_path).resolve()
-    out = Path(output_path).resolve() if output_path is not None else man.parent / "proof_review_rubric.md"
+    out = (
+        Path(output_path).resolve()
+        if output_path is not None
+        else man.parent / "proof_review_rubric.md"
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     text = build_proof_review_rubric("Proof Review Rubric", man)
     out.write_text(text, encoding="utf-8")

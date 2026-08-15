@@ -18,7 +18,15 @@ def test_export_translation_pdf_writes_valid_pdf() -> None:
                 "source_engine": "manual",
                 "language": "de",
                 "script": "unknown",
-                "segments": [{"text": "German here", "confidence": 1.0, "bbox_xywh": [0, 0, 1, 1], "language": "de", "script": "unknown"}],
+                "segments": [
+                    {
+                        "text": "German here",
+                        "confidence": 1.0,
+                        "bbox_xywh": [0, 0, 1, 1],
+                        "language": "de",
+                        "script": "unknown",
+                    }
+                ],
             },
         }
         export_translation_pdf([page], out)

@@ -43,7 +43,9 @@ class HTREvidence:
         }
 
 
-def load_htr_sidecar(pages_dir: Path, stem: str, enabled: bool) -> tuple[HTREvidence | None, dict[str, object]]:
+def load_htr_sidecar(
+    pages_dir: Path, stem: str, enabled: bool
+) -> tuple[HTREvidence | None, dict[str, object]]:
     path = Path(pages_dir) / f"{stem}.htr.json"
     meta: dict[str, object] = {
         "htr_enabled": bool(enabled),

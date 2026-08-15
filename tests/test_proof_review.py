@@ -12,7 +12,12 @@ def test_write_proof_review_rubric_from_manifest() -> None:
         root = Path(d)
         manifest = root / "manifest.json"
         manifest.write_text(
-            json.dumps({"run_id": "r1", "processed_pages": [{"source_path": "a.jpg"}, {"source_path": "b.jpg"}]}),
+            json.dumps(
+                {
+                    "run_id": "r1",
+                    "processed_pages": [{"source_path": "a.jpg"}, {"source_path": "b.jpg"}],
+                }
+            ),
             encoding="utf-8",
         )
         out = write_proof_review_rubric(manifest)

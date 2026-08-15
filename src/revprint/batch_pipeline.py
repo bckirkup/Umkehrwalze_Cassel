@@ -110,12 +110,14 @@ def _compute_qa_metrics(
 
     # Edge completeness: fraction of border that is white (no clipped text).
     border_band = max(3, int(min(h, w) * 0.02))
-    edges = np.concatenate([
-        gray[:border_band, :].ravel(),
-        gray[-border_band:, :].ravel(),
-        gray[:, :border_band].ravel(),
-        gray[:, -border_band:].ravel(),
-    ])
+    edges = np.concatenate(
+        [
+            gray[:border_band, :].ravel(),
+            gray[-border_band:, :].ravel(),
+            gray[:, :border_band].ravel(),
+            gray[:, -border_band:].ravel(),
+        ]
+    )
     qa.edge_completeness = float(np.mean(edges > 220.0))
 
     # Flag outliers.
@@ -315,10 +317,7 @@ def run_batch_pipeline(
     # Phase 4: Aggregate QA.
     success_count = sum(1 for r in results if r.error is None)
     error_count = sum(1 for r in results if r.error is not None)
-    flagged_count = sum(
-        1 for r in results
-        if r.qa_metrics.get("flagged", False)
-    )
+    flagged_count = sum(1 for r in results if r.qa_metrics.get("flagged", False))
 
     total_elapsed = time.monotonic() - t0
 
@@ -356,12 +355,13 @@ def run_batch_pipeline(
             for r in results
         ],
     }
-    manifest_path.write_text(
-        json.dumps(manifest_data, indent=2, default=str), encoding="utf-8"
-    )
+    manifest_path.write_text(json.dumps(manifest_data, indent=2, default=str), encoding="utf-8")
 
     logger.info(
         "Batch complete: %d/%d succeeded, %d flagged, %.1fs total",
-        success_count, len(results), flagged_count, total_elapsed,
+        success_count,
+        len(results),
+        flagged_count,
+        total_elapsed,
     )
     return batch

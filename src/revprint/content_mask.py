@@ -101,7 +101,8 @@ def compute_content_mask(
     )
 
     num, labels, stats, _ = cv2.connectedComponentsWithStats(
-        paper_binary, connectivity=8,
+        paper_binary,
+        connectivity=8,
     )
     if num <= 1:
         return np.ones((h, w), dtype=np.float32)
@@ -110,7 +111,9 @@ def compute_content_mask(
     paper = (labels == best).astype(np.uint8) * 255
 
     contours, _ = cv2.findContours(
-        paper, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE,
+        paper,
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE,
     )
     if contours:
         cv2.drawContours(paper, contours, -1, 255, cv2.FILLED)
@@ -119,15 +122,21 @@ def compute_content_mask(
     paper = cv2.erode(
         paper,
         cv2.getStructuringElement(
-            cv2.MORPH_ELLIPSE, (erode_px * 2 + 1, erode_px * 2 + 1),
+            cv2.MORPH_ELLIPSE,
+            (erode_px * 2 + 1, erode_px * 2 + 1),
         ),
     )
 
     feather_px = max(5, int(dim * feather_fraction))
     feather_k = feather_px * 2 + 1
-    thresh_mask = cv2.GaussianBlur(
-        paper.astype(np.float32), (feather_k, feather_k), 0,
-    ) / 255.0
+    thresh_mask = (
+        cv2.GaussianBlur(
+            paper.astype(np.float32),
+            (feather_k, feather_k),
+            0,
+        )
+        / 255.0
+    )
 
     # --- 4. profile-based binding/edge margin mask -----------------------
     left, top, right, bottom = _binding_margin_px(smooth, paper_brightness)
@@ -142,22 +151,26 @@ def compute_content_mask(
     if left > 0:
         ramp = np.linspace(0.0, 1.0, min(left + feather_px, w))
         profile_mask[:, : len(ramp)] = np.minimum(
-            profile_mask[:, : len(ramp)], ramp[np.newaxis, :],
+            profile_mask[:, : len(ramp)],
+            ramp[np.newaxis, :],
         )
     if right > 0:
         ramp = np.linspace(0.0, 1.0, min(right + feather_px, w))
         profile_mask[:, -len(ramp) :] = np.minimum(
-            profile_mask[:, -len(ramp) :], ramp[np.newaxis, ::-1],
+            profile_mask[:, -len(ramp) :],
+            ramp[np.newaxis, ::-1],
         )
     if top > 0:
         ramp = np.linspace(0.0, 1.0, min(top + feather_px, h))
         profile_mask[: len(ramp), :] = np.minimum(
-            profile_mask[: len(ramp), :], ramp[:, np.newaxis],
+            profile_mask[: len(ramp), :],
+            ramp[:, np.newaxis],
         )
     if bottom > 0:
         ramp = np.linspace(0.0, 1.0, min(bottom + feather_px, h))
         profile_mask[-len(ramp) :, :] = np.minimum(
-            profile_mask[-len(ramp) :, :], ramp[::-1, np.newaxis],
+            profile_mask[-len(ramp) :, :],
+            ramp[::-1, np.newaxis],
         )
 
     # --- 5. combine: take the minimum (most aggressive) ------------------

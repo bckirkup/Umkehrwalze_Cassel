@@ -49,12 +49,31 @@ include = ["src/revprint", "README.md", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=src/revprint --cov-report=term-missing --cov-fail-under=70"
+addopts = "--cov=src/revprint --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=70"
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "ARG", "C90"]
 ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+# Measured current maximum; ratchet this ceiling down only.
+max-complexity = 65
+
+[tool.ruff.lint.isort]
+known-first-party = ["revprint"]
+
+[tool.ruff.lint.per-file-ignores]
+# ARG001: QA keeps facing_path as a compatibility-stable callback keyword.
+"src/revprint/batch_pipeline.py" = ["ARG001"]
+# ARG001: max_dim remains a compatibility-stable public tuning parameter.
+"src/revprint/ghost_cross_page.py" = ["ARG001"]
+# C901: create_app (65) and index (34) are measured legacy complexity; remove when simplified.
+"src/revprint/web.py" = ["C901"]
+# C901: apply_line_artifact_refine has measured legacy complexity 29; remove when simplified.
+"src/revprint/line_artifact_refine.py" = ["C901"]
+# C901: export_translation_pdf has measured legacy complexity 17; remove when simplified.
+"src/revprint/pdf_export.py" = ["C901"]

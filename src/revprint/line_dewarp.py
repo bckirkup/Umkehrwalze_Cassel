@@ -41,14 +41,13 @@ def _detect_baselines(
     min_line_height : minimum distance between adjacent lines
     peak_prominence : prominence threshold for peak detection (fraction of max)
     """
-    h, w = binary.shape
     proj = np.sum(binary.astype(np.float32), axis=1)
     if proj.max() == 0:
         return []
 
     proj_norm = proj / proj.max()
     prominence = max(peak_prominence, 0.05)
-    peaks, properties = find_peaks(
+    peaks, _ = find_peaks(
         proj_norm,
         distance=min_line_height,
         prominence=prominence,
@@ -75,7 +74,7 @@ def _trace_baseline(
     for x in range(step // 2, w, step):
         y_lo = max(0, y_center - band_half)
         y_hi = min(h, y_center + band_half)
-        col_slice = binary[y_lo:y_hi, max(0, x - 3): min(w, x + 4)]
+        col_slice = binary[y_lo:y_hi, max(0, x - 3) : min(w, x + 4)]
         if col_slice.sum() == 0:
             continue
         # Weighted centroid in the y direction.
@@ -183,7 +182,7 @@ def compute_dewarp_map(
 
     # Upscale to full resolution.
     dy_map = cv2.resize(dy_small, (w, h), interpolation=cv2.INTER_LINEAR)
-    dy_map *= (1.0 / work_scale)  # Scale displacement back to full-res pixels.
+    dy_map *= 1.0 / work_scale  # Scale displacement back to full-res pixels.
 
     return dy_map
 
@@ -197,12 +196,8 @@ def apply_dewarp(
     Uses cv2.remap for sub-pixel accuracy.
     """
     h, w = gray.shape
-    map_x = np.broadcast_to(
-        np.arange(w, dtype=np.float32).reshape(1, w), (h, w)
-    ).copy()
-    map_y = np.broadcast_to(
-        np.arange(h, dtype=np.float32).reshape(h, 1), (h, w)
-    ).copy()
+    map_x = np.broadcast_to(np.arange(w, dtype=np.float32).reshape(1, w), (h, w)).copy()
+    map_y = np.broadcast_to(np.arange(h, dtype=np.float32).reshape(h, 1), (h, w)).copy()
     map_y = map_y - dy_map
     return cv2.remap(gray, map_x, map_y, cv2.INTER_LINEAR, borderValue=255)
 

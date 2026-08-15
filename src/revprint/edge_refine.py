@@ -79,7 +79,7 @@ def _largest_component_mask(binary_255: np.ndarray) -> np.ndarray:
         (binary_255 == 255).astype(np.uint8), connectivity=8
     )
     if num <= 1:
-        return (binary_255 == 255)
+        return binary_255 == 255
     best, best_a = 1, stats[1, cv2.CC_STAT_AREA]
     for i in range(2, num):
         if stats[i, cv2.CC_STAT_AREA] > best_a:

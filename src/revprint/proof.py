@@ -67,7 +67,9 @@ def _apply_profile_overrides(settings: Settings, profile: str) -> Settings:
         settings.dewarp_enabled = True
         settings.speckle_refine_enabled = True
         settings.speckle_max_component_area = max(settings.speckle_max_component_area, 44)
-        settings.speckle_border_max_component_area = max(settings.speckle_border_max_component_area, 140)
+        settings.speckle_border_max_component_area = max(
+            settings.speckle_border_max_component_area, 140
+        )
         settings.speckle_border_band_ratio = max(settings.speckle_border_band_ratio, 0.13)
         settings.line_refine_enabled = True
         settings.line_refine_min_length_ratio = max(settings.line_refine_min_length_ratio, 0.5)
@@ -78,7 +80,9 @@ def _apply_profile_overrides(settings: Settings, profile: str) -> Settings:
         settings.edge_reconstruct_enabled = True
         settings.edge_reconstruct_strength = max(settings.edge_reconstruct_strength, 0.62)
         settings.ghost_confidence_min = min(settings.ghost_confidence_min, 0.12)
-        settings.ghost_plausibility_exhaustive_passes = max(settings.ghost_plausibility_exhaustive_passes, 16)
+        settings.ghost_plausibility_exhaustive_passes = max(
+            settings.ghost_plausibility_exhaustive_passes, 16
+        )
         settings.ghost_plausibility_min = max(settings.ghost_plausibility_min, 0.62)
         return settings
     if p == "training":
@@ -86,7 +90,9 @@ def _apply_profile_overrides(settings: Settings, profile: str) -> Settings:
         settings.dewarp_enabled = True
         settings.speckle_refine_enabled = True
         settings.edge_reconstruct_enabled = True
-        settings.ghost_plausibility_exhaustive_passes = max(settings.ghost_plausibility_exhaustive_passes, 6)
+        settings.ghost_plausibility_exhaustive_passes = max(
+            settings.ghost_plausibility_exhaustive_passes, 6
+        )
         return settings
     return settings
 
@@ -214,10 +220,13 @@ def _resolve_translation_pipeline(
             cache_path=settings.translation_cache_path,
         )
     else:
-        tr, tmeta = "", {
-            "skipped": True,
-            "reason": "ocr_confidence_below_threshold" if ocr else "no_ocr_text",
-        }
+        tr, tmeta = (
+            "",
+            {
+                "skipped": True,
+                "reason": "ocr_confidence_below_threshold" if ocr else "no_ocr_text",
+            },
+        )
     if not tr and settings.gemini_enabled:
         gemini_text, gmeta = gemini_translate_image(
             image_path=source_path,
@@ -289,12 +298,21 @@ def _build_page_record(
     with Image.open(page.cleaned_grayscale_path) as im:
         gray = im.convert("L")
     translation_en, source_type, tmeta = _resolve_translation_pipeline(
-        pages_dir, stem, Path(page.source_path), gray, settings, phrase_memory_state=phrase_memory_state
+        pages_dir,
+        stem,
+        Path(page.source_path),
+        gray,
+        settings,
+        phrase_memory_state=phrase_memory_state,
     )
     htr_text = ""
     if source_type == "htr":
         htr_text = str((tmeta.get("htr_text") or "")).strip()
-    ocr_text = str(tmeta.get("ocr_phrases", [{}])[0].get("text", "")).strip() if tmeta.get("ocr_phrases") else ""
+    ocr_text = (
+        str(tmeta.get("ocr_phrases", [{}])[0].get("text", "")).strip()
+        if tmeta.get("ocr_phrases")
+        else ""
+    )
     phrase_memory_next = observe_phrases(
         phrase_memory_state,
         [str(p.get("text", "")) for p in tmeta.get("ocr_phrases", []) if isinstance(p, dict)],
@@ -393,7 +411,9 @@ def _build_quality_summary(page_records: list[dict[str, object]]) -> dict[str, o
     }
 
 
-def _reproduction_image_path(page: ProcessedPage, rec: dict[str, object], settings: Settings) -> Path:
+def _reproduction_image_path(
+    page: ProcessedPage, rec: dict[str, object], settings: Settings
+) -> Path:
     dewarped = rec.get("dewarped_grayscale_path")
     if (
         settings.dewarp_enabled
@@ -446,10 +466,13 @@ def run_proof(
         try:
             page = process_page(source, pages_dir)
             interactions = [
-                a.to_meta() for a in analyze_interactions_for_source(source, all_files, interactions_dir)
+                a.to_meta()
+                for a in analyze_interactions_for_source(source, all_files, interactions_dir)
             ]
             stem = Path(page.source_path).stem
-            neighbor_paths = {str(m["relation"]): Path(str(m["neighbor_path"])) for m in interactions}
+            neighbor_paths = {
+                str(m["relation"]): Path(str(m["neighbor_path"])) for m in interactions
+            }
             ghost_meta = apply_ghost_suppression(
                 cleaned_gray_path=Path(page.cleaned_grayscale_path),
                 neighbor_paths=neighbor_paths,
@@ -518,7 +541,9 @@ def run_proof(
             store.update_state(job_id, JobState.FAILED, error=str(exc), cost_units=0.0)
             raise
 
-    repro_paths = [_reproduction_image_path(page, rec, settings) for page, rec in zip(processed, page_records)]
+    repro_paths = [
+        _reproduction_image_path(page, rec, settings) for page, rec in zip(processed, page_records)
+    ]
     reproduction_pdf = export_reproduction_pdf(repro_paths, pdf_dir / "reproduction_proof.pdf")
     translation_pdf = export_translation_pdf(page_records, pdf_dir / "translation_proof.pdf")
     quality_summary = _build_quality_summary(page_records)
@@ -561,5 +586,7 @@ def run_proof(
         pilot_print_bundle_path=run.pilot_print_bundle_path,
         quality_summary=run.quality_summary,
     )
-    Path(run.manifest_path).write_text(json.dumps(asdict(run), indent=2, default=str), encoding="utf-8")
+    Path(run.manifest_path).write_text(
+        json.dumps(asdict(run), indent=2, default=str), encoding="utf-8"
+    )
     return run

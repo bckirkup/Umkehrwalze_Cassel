@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from revprint.page_interactions import (
     _body_registration_mask,
@@ -18,7 +19,7 @@ def test_registration_decision_rejects_nan_error() -> None:
         0.05,
     )
     assert applied is False
-    assert conf == 0.0
+    assert conf == pytest.approx(0.0)
     assert reason == "invalid_registration_error"
 
 

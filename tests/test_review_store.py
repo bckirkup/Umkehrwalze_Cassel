@@ -27,7 +27,9 @@ def test_review_store_add_list_export() -> None:
         rows = store.list_decisions(project_slug="archive-a", volume_slug="vol-1", run_id="run-1")
         assert len(rows) == 1
         assert rows[0].decision == "accept"
-        out = store.export_jsonl(root / "labels.jsonl", project_slug="archive-a", volume_slug="vol-1")
+        out = store.export_jsonl(
+            root / "labels.jsonl", project_slug="archive-a", volume_slug="vol-1"
+        )
         lines = out.read_text(encoding="utf-8").strip().splitlines()
         assert len(lines) == 1
         payload = json.loads(lines[0])

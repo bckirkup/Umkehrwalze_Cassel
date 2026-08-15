@@ -86,7 +86,7 @@ def _body_registration_mask(ink: np.ndarray) -> tuple[np.ndarray, float]:
     Mask out page borders, bottom label band, and strong ink edges so registration
     focuses on interior paper texture + faint ghosts rather than torn edges.
     """
-    h, w = ink.shape
+    h, _ = ink.shape
     interior = _interior_band_mask(ink.shape)
     # Drop bottom archive-label band (common on Staatsarchiv scans)
     label_band = int(h * 0.12)
@@ -164,7 +164,7 @@ def _analyze_pair(
     output_dir: Path,
 ) -> InteractionArtifact:
     full_src = _load_gray(source_path)
-    full_h, full_w = full_src.shape
+    full_h, _ = full_src.shape
     src_g = _resize_for_analysis(full_src)
     h, w = src_g.shape
     analysis_scale_y = float(full_h / h)
@@ -182,7 +182,11 @@ def _analyze_pair(
     shift_yx = np.array([0.0, 0.0], dtype=np.float64)
     error = 1.0
     try:
-        if float(np.sum(body)) > 1e-3 and float(np.std(src_reg)) > 1e-4 and float(np.std(nbr_reg)) > 1e-4:
+        if (
+            float(np.sum(body)) > 1e-3
+            and float(np.std(src_reg)) > 1e-4
+            and float(np.std(nbr_reg)) > 1e-4
+        ):
             shift_yx, error, _ = phase_cross_correlation(
                 src_reg,
                 nbr_reg,
@@ -208,7 +212,9 @@ def _analyze_pair(
     if not applied:
         shift_yx = np.array([0.0, 0.0])
 
-    aligned = ndi_shift(nbr_ink, shift=tuple(float(v) for v in shift_yx), order=1, mode="constant", cval=0.0)
+    aligned = ndi_shift(
+        nbr_ink, shift=tuple(float(v) for v in shift_yx), order=1, mode="constant", cval=0.0
+    )
     ghost = np.clip(aligned * (1.0 - np.clip(src_ink * 1.7, 0.0, 1.0)), 0.0, 1.0)
     ghost = cv2.GaussianBlur(ghost.astype(np.float32), (0, 0), sigmaX=0.8)
     ghost = np.where(ghost > 0.55, ghost, 0.0)

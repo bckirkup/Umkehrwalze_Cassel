@@ -204,9 +204,13 @@ def _cmd_review_add(args: argparse.Namespace) -> int:
 def _cmd_review_list(args: argparse.Namespace) -> int:
     store = ReviewStore(Path(args.review_store).expanduser().resolve())
     store.init_schema()
-    rows = store.list_decisions(project_slug=args.project, volume_slug=args.volume, run_id=args.run_id)
+    rows = store.list_decisions(
+        project_slug=args.project, volume_slug=args.volume, run_id=args.run_id
+    )
     for row in rows:
-        print(f"{row.run_id}\t{row.page_stem}\t{row.artifact_type}\t{row.decision}\t{row.artifact_path}")
+        print(
+            f"{row.run_id}\t{row.page_stem}\t{row.artifact_type}\t{row.decision}\t{row.artifact_path}"
+        )
     if not rows:
         print("No review decisions.")
     return 0
@@ -280,8 +284,12 @@ def build_parser() -> argparse.ArgumentParser:
     s_stat = sub.add_parser("status", help="Show job counts by state.")
     s_stat.set_defaults(func=_cmd_status)
 
-    s_proof = sub.add_parser("process-proof", help="Process a small proof run into images and PDFs.")
-    s_proof.add_argument("--limit", type=int, default=4, help="Number of pages to process (default: 4).")
+    s_proof = sub.add_parser(
+        "process-proof", help="Process a small proof run into images and PDFs."
+    )
+    s_proof.add_argument(
+        "--limit", type=int, default=4, help="Number of pages to process (default: 4)."
+    )
     s_proof.add_argument(
         "--start",
         type=int,
@@ -354,7 +362,9 @@ def build_parser() -> argparse.ArgumentParser:
     s_review_export.add_argument("--run-id", default=None)
     s_review_export.add_argument("--output", type=Path, required=True)
     s_review_export.set_defaults(func=_cmd_review_export)
-    s_review_rubric = review_sub.add_parser("rubric", help="Create proof review rubric from manifest.")
+    s_review_rubric = review_sub.add_parser(
+        "rubric", help="Create proof review rubric from manifest."
+    )
     s_review_rubric.add_argument("--manifest", type=Path, required=True)
     s_review_rubric.add_argument("--output", type=Path, default=None)
     s_review_rubric.set_defaults(func=_cmd_review_rubric)

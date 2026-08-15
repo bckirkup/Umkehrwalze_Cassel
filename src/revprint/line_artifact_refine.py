@@ -166,7 +166,7 @@ def apply_line_artifact_refine(
                 _apply_local_clear(line_mask, is_spine=True)
 
     if lines is not None:
-        for line_pts in lines[:, 0, :]:
+        for line_pts in np.asarray(lines).reshape(-1, 4):
             x1, y1, x2, y2 = [int(v) for v in line_pts]
             dx = x2 - x1
             dy = y2 - y1

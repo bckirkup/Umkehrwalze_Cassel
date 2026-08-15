@@ -12,6 +12,7 @@ def test_index_renders_project_volume_profile_controls(
 ) -> None:
     class FakeProjectStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -36,6 +37,7 @@ def test_index_renders_project_volume_profile_controls(
 
     class FakeJobStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -44,7 +46,11 @@ def test_index_renders_project_volume_profile_controls(
         def count_by_state(self) -> dict[str, int]:
             return {}
 
-    monkeypatch.setattr(web, "_settings_paths", lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"))
+    monkeypatch.setattr(
+        web,
+        "_settings_paths",
+        lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"),
+    )
     monkeypatch.setattr(web, "ProjectStore", FakeProjectStore)
     monkeypatch.setattr(web, "JobStore", FakeJobStore)
     monkeypatch.setattr(web, "scan_jpegs", lambda _root: [])
@@ -67,6 +73,7 @@ def test_process_rejects_unknown_project_volume(
 ) -> None:
     class FakeProjectStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -77,12 +84,18 @@ def test_process_rejects_unknown_project_volume(
             assert volume_slug == "missing-vol"
             return None
 
-    monkeypatch.setattr(web, "_settings_paths", lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"))
+    monkeypatch.setattr(
+        web,
+        "_settings_paths",
+        lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"),
+    )
     monkeypatch.setattr(web, "ProjectStore", FakeProjectStore)
     app = web.create_app()
     client = app.test_client()
 
-    resp = client.post("/process", data={"project": "archive-a", "volume": "missing-vol", "profile": "balanced"})
+    resp = client.post(
+        "/process", data={"project": "archive-a", "volume": "missing-vol", "profile": "balanced"}
+    )
 
     assert resp.status_code == 400
     assert "Unknown project/volume selection." in resp.get_data(as_text=True)
@@ -95,6 +108,7 @@ def test_process_known_project_volume_calls_run_proof_with_expected_paths(
 
     class FakeProjectStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -125,7 +139,11 @@ def test_process_known_project_volume_calls_run_proof_with_expected_paths(
         calls["start"] = start
         calls["profile"] = profile
 
-    monkeypatch.setattr(web, "_settings_paths", lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"))
+    monkeypatch.setattr(
+        web,
+        "_settings_paths",
+        lambda: (tmp_path / "input", tmp_path / "jobs.sqlite", tmp_path / "projects.sqlite"),
+    )
     monkeypatch.setattr(web, "ProjectStore", FakeProjectStore)
     monkeypatch.setattr(web, "run_proof", fake_run_proof)
     app = web.create_app()
@@ -133,7 +151,13 @@ def test_process_known_project_volume_calls_run_proof_with_expected_paths(
 
     resp = client.post(
         "/process",
-        data={"project": "archive-a", "volume": "vol-1", "profile": "quick", "start": "3", "limit": "9"},
+        data={
+            "project": "archive-a",
+            "volume": "vol-1",
+            "profile": "quick",
+            "start": "3",
+            "limit": "9",
+        },
     )
 
     assert resp.status_code == 302

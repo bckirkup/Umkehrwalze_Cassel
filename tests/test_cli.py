@@ -58,6 +58,7 @@ def test_project_init_calls_store_and_prints_id(
 
     class FakeStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -70,7 +71,12 @@ def test_project_init_calls_store_and_prints_id(
             return "project-123"
 
     monkeypatch.setattr(cli, "ProjectStore", FakeStore)
-    args = argparse.Namespace(project_store=tmp_path / "projects.sqlite", name="Archive A", corpus_root=tmp_path, notes="n")
+    args = argparse.Namespace(
+        project_store=tmp_path / "projects.sqlite",
+        name="Archive A",
+        corpus_root=tmp_path,
+        notes="n",
+    )
 
     rc = cli._cmd_project_init(args)
 
@@ -83,11 +89,18 @@ def test_project_init_calls_store_and_prints_id(
     assert "project_id=project-123" in out
 
 
-def test_project_list_prints_projects(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
-    project = type("Project", (), {"slug": "archive-a", "name": "Archive A", "corpus_root": str(tmp_path / "corpus")})()
+def test_project_list_prints_projects(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    project = type(
+        "Project",
+        (),
+        {"slug": "archive-a", "name": "Archive A", "corpus_root": str(tmp_path / "corpus")},
+    )()
 
     class FakeStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -114,6 +127,7 @@ def test_volume_add_calls_store_with_parsed_project(
 
     class FakeStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:
@@ -122,7 +136,9 @@ def test_volume_add_calls_store_with_parsed_project(
         def list_projects(self) -> list[object]:
             return [project]
 
-        def add_volume(self, project_id: str, name: str, folder_path: Path, processing_profile: str) -> str:
+        def add_volume(
+            self, project_id: str, name: str, folder_path: Path, processing_profile: str
+        ) -> str:
             calls["project_id"] = project_id
             calls["name"] = name
             calls["folder_path"] = folder_path
@@ -158,11 +174,17 @@ def test_volume_list_prints_project_volumes(
     volume = type(
         "Volume",
         (),
-        {"slug": "vol-1", "name": "Vol 1", "folder_path": str(tmp_path / "vol1"), "processing_profile": "balanced"},
+        {
+            "slug": "vol-1",
+            "name": "Vol 1",
+            "folder_path": str(tmp_path / "vol1"),
+            "processing_profile": "balanced",
+        },
     )()
 
     class FakeStore:
         def __init__(self, _path: Path) -> None:
+            # The fake store does not need initialization state.
             pass
 
         def init_schema(self) -> None:

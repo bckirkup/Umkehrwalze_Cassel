@@ -61,7 +61,7 @@ def _load_reduced(path: Path, max_dim: int = 800) -> tuple[np.ndarray, np.ndarra
 
 def _detect_spine(gray: np.ndarray) -> tuple[str, int]:
     """Return (side, shadow_extent_px) from column brightness profile."""
-    h, w = gray.shape
+    _, w = gray.shape
     col_means = np.mean(gray.astype(np.float32), axis=0)
     band = max(4, int(w * 0.15))
     left_mean = float(np.mean(col_means[:band]))
@@ -72,7 +72,7 @@ def _detect_spine(gray: np.ndarray) -> tuple[str, int]:
     if left_mean < right_mean:
         side = "left"
         # Find where spine shadow ends (column mean rises to within 90% of center).
-        center_mean = float(np.mean(col_means[w // 3: 2 * w // 3]))
+        center_mean = float(np.mean(col_means[w // 3 : 2 * w // 3]))
         threshold = center_mean * 0.92
         extent = 0
         for x in range(min(w, band * 2)):
@@ -83,7 +83,7 @@ def _detect_spine(gray: np.ndarray) -> tuple[str, int]:
             extent = band
     else:
         side = "right"
-        center_mean = float(np.mean(col_means[w // 3: 2 * w // 3]))
+        center_mean = float(np.mean(col_means[w // 3 : 2 * w // 3]))
         threshold = center_mean * 0.92
         extent = 0
         for x in range(w - 1, max(0, w - band * 2), -1):
@@ -97,14 +97,17 @@ def _detect_spine(gray: np.ndarray) -> tuple[str, int]:
 
 def _compute_page_stats(path: Path, max_dim: int = 800) -> PageStats:
     gray, lab = _load_reduced(path, max_dim=max_dim)
-    h, w = gray.shape
     flat = gray.ravel().astype(np.float32)
 
     # Paper: brightest 60% of pixels.
     paper_threshold = float(np.percentile(flat, 40))
     paper_pixels = flat[flat >= paper_threshold]
     paper_median = float(np.median(paper_pixels)) if paper_pixels.size > 0 else 200.0
-    paper_iqr = float(np.percentile(paper_pixels, 75) - np.percentile(paper_pixels, 25)) if paper_pixels.size > 0 else 20.0
+    paper_iqr = (
+        float(np.percentile(paper_pixels, 75) - np.percentile(paper_pixels, 25))
+        if paper_pixels.size > 0
+        else 20.0
+    )
 
     # Ink: darkest 10% of pixels.
     ink_threshold = float(np.percentile(flat, 10))
@@ -160,11 +163,13 @@ def _cluster_stamp_colours(
         stamp_mask = (chroma > 18.0) & (l_chan > 30.0) & (l_chan < 200.0)
         if np.count_nonzero(stamp_mask) < 10:
             continue
-        pixels = np.column_stack([
-            l_chan[stamp_mask],
-            a_chan[stamp_mask],
-            b_chan[stamp_mask],
-        ])
+        pixels = np.column_stack(
+            [
+                l_chan[stamp_mask],
+                a_chan[stamp_mask],
+                b_chan[stamp_mask],
+            ]
+        )
         # Subsample to cap memory.
         if pixels.shape[0] > 5000:
             idx = np.random.default_rng(42).choice(pixels.shape[0], 5000, replace=False)

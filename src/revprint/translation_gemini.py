@@ -101,7 +101,9 @@ def gemini_translate_image(
         candidates = body.get("candidates", [])
         first = candidates[0]
         parts = first["content"]["parts"]
-        text = "\n".join(str(p.get("text", "")).strip() for p in parts if isinstance(p, dict)).strip()
+        text = "\n".join(
+            str(p.get("text", "")).strip() for p in parts if isinstance(p, dict)
+        ).strip()
     except Exception:
         return "", {"error": "unexpected_response", "raw": str(body)[:1000], "model": model}
     if cache_enabled and cache_path is not None and text:

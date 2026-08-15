@@ -39,18 +39,14 @@ def _output_roots() -> list[Path]:
     return out
 
 
-def _path_allowed(path: Path) -> bool:
-    for root in _output_roots():
-        if path == root or root in path.parents:
-            return True
-    return False
-
-
 def _safe_resolve_run(run_str: str) -> Path | None:
     if not run_str:
         return None
     run = Path(run_str).resolve()
-    if not run.is_dir() or not _path_allowed(run):
+    roots = _output_roots()
+    if not any(run.is_relative_to(root) for root in roots):
+        raise ValueError("Invalid run path.")
+    if not run.is_dir():
         return None
     return run
 
@@ -152,7 +148,9 @@ def create_app() -> Flask:
                             conf_s = f"{float(conf):.3f}" if conf is not None else "—"
                         except (TypeError, ValueError):
                             conf_s = "—"
-                        reg_cells.append(f"{rel}: conf={conf_s} applied={appl}<br><small>{reason}</small>")
+                        reg_cells.append(
+                            f"{rel}: conf={conf_s} applied={appl}<br><small>{reason}</small>"
+                        )
                     reg_html = "<br>".join(reg_cells) if reg_cells else "—"
                     g_applied = rec.get("ghost_suppression_applied")
                     g_reason = html.escape(str(rec.get("ghost_suppression_reason", "")))
@@ -172,7 +170,11 @@ def create_app() -> Flask:
                         p_s = ""
                     if p_s:
                         ghost_html += "<br><small>" + html.escape(p_s) + "</small>"
-                    for key in ("plausibility_map_path", "plausibility_protect_mask_path", "plausibility_regions_path"):
+                    for key in (
+                        "plausibility_map_path",
+                        "plausibility_protect_mask_path",
+                        "plausibility_regions_path",
+                    ):
                         p = rec.get(key)
                         if isinstance(p, str) and Path(p).is_file():
                             ghost_html += "<br>" + _link(Path(p), Path(p).name)
@@ -196,7 +198,7 @@ def create_app() -> Flask:
                     <h3>Manifest diagnostics</h3>
                     <table>
                       <tr><th>Page</th><th>Registration</th><th>Ghost suppression</th><th>Dewarp</th><th>Translation source</th></tr>
-                      {''.join(rows)}
+                      {"".join(rows)}
                     </table>
                     """
 
@@ -212,18 +214,20 @@ def create_app() -> Flask:
             latest_html += f"""
             <p><a href="/htr?run={quote(str(latest))}">Open HTR Editor for this run</a></p>
             <h3>Cleaned Page Images</h3>
-            <ul>{''.join(image_links)}</ul>
+            <ul>{"".join(image_links)}</ul>
             <h3>Ghost suppression review</h3>
-            <ul>{''.join(ghost_links) if ghost_links else '<li><em>None yet</em></li>'}</ul>
+            <ul>{"".join(ghost_links) if ghost_links else "<li><em>None yet</em></li>"}</ul>
             <h3>Dewarped previews</h3>
-            <ul>{''.join(dewarp_links) if dewarp_links else '<li><em>None yet</em></li>'}</ul>
+            <ul>{"".join(dewarp_links) if dewarp_links else "<li><em>None yet</em></li>"}</ul>
             <h3>Interaction Analysis</h3>
             <p><small>Red overlays are mirrored neighbor-page candidates, useful for reviewing offset/ghost ink.</small></p>
-            <ul>{''.join(interaction_links)}</ul>
+            <ul>{"".join(interaction_links)}</ul>
             {diag_html}
             """
 
-        rows = "".join(f"<tr><td>{html.escape(k)}</td><td>{v}</td></tr>" for k, v in sorted(counts.items()))
+        rows = "".join(
+            f"<tr><td>{html.escape(k)}</td><td>{v}</td></tr>" for k, v in sorted(counts.items())
+        )
         if not rows:
             rows = '<tr><td colspan="2">No jobs yet</td></tr>'
 
@@ -247,14 +251,14 @@ def create_app() -> Flask:
           <p><strong>Input root:</strong> <code>{html.escape(str(effective_root))}</code></p>
           <p><strong>JPG count:</strong> {count}</p>
           <p><strong>Job store:</strong> <code>{html.escape(str(job_store_path))}</code></p>
-          {f'<p class="error">{html.escape(scan_error)}</p>' if scan_error else ''}
+          {f'<p class="error">{html.escape(scan_error)}</p>' if scan_error else ""}
 
           <form method="post" action="/process">
             <label>Project
-              <select name="project">{''.join(project_options)}</select>
+              <select name="project">{"".join(project_options)}</select>
             </label>
             <label>Volume
-              <select name="volume">{''.join(volume_options)}</select>
+              <select name="volume">{"".join(volume_options)}</select>
             </label>
             <label>Profile
               <select name="profile">
@@ -307,12 +311,18 @@ def create_app() -> Flask:
             start=start,
             profile=profile,
         )
-        return redirect(f"/?project={quote(project_slug)}&volume={quote(volume_slug)}&profile={quote(profile)}")
+
+        return redirect(
+            f"/?project={quote(project_slug)}&volume={quote(volume_slug)}&profile={quote(profile)}"
+        )
 
     @app.get("/htr")
-    def htr_editor() -> str:
+    def htr_editor() -> object:
         run_param = request.args.get("run", "")
-        run = _safe_resolve_run(run_param)
+        try:
+            run = _safe_resolve_run(run_param)
+        except ValueError:
+            return "Invalid run path.", 400
         if run is None:
             latest = _latest_run(Path(os.environ.get("RPK_OUTPUT_ROOT", "outputs/proof")).resolve())
             run = latest
@@ -400,7 +410,10 @@ def create_app() -> Flask:
 
     @app.post("/htr/save")
     def htr_save() -> object:
-        run = _safe_resolve_run(request.form.get("run", ""))
+        try:
+            run = _safe_resolve_run(request.form.get("run", ""))
+        except ValueError:
+            return "Invalid run path.", 400
         if run is None:
             return "Invalid run path.", 400
         stem = request.form.get("stem", "").strip()
@@ -427,7 +440,9 @@ def create_app() -> Flask:
             if not isinstance(bbox, (list, tuple)) or len(bbox) != 4:
                 bbox = [0, 0, 0, 0]
             try:
-                confidence = float(item["confidence"]) if item.get("confidence") is not None else None
+                confidence = (
+                    float(item["confidence"]) if item.get("confidence") is not None else None
+                )
             except Exception:
                 confidence = None
             out.append(
@@ -450,7 +465,8 @@ def create_app() -> Flask:
                 existing = {}
         payload = {
             **existing,
-            "source_engine": request.form.get("source_engine", "htr-sidecar").strip() or "htr-sidecar",
+            "source_engine": request.form.get("source_engine", "htr-sidecar").strip()
+            or "htr-sidecar",
             "language": request.form.get("language", "de").strip() or "de",
             "script": request.form.get("script", "kurrent").strip() or "kurrent",
             "segments": out,
@@ -461,7 +477,8 @@ def create_app() -> Flask:
     @app.get("/file")
     def file() -> object:
         path = Path(request.args["path"]).resolve()
-        if not _path_allowed(path):
+        roots = _output_roots()
+        if not any(path.is_relative_to(root) for root in roots):
             return "Not allowed", 403
         if not path.exists() or not path.is_file():
             return "Not found", 404

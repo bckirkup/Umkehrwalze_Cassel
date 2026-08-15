@@ -13,7 +13,9 @@ from reportlab.pdfgen import canvas
 from revprint.pdf_fonts import register_unicode_font
 
 
-def _fit_rect(img_size: tuple[int, int], box: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+def _fit_rect(
+    img_size: tuple[int, int], box: tuple[float, float, float, float]
+) -> tuple[float, float, float, float]:
     img_w, img_h = img_size
     left, bottom, width, height = box
     scale = min(width / img_w, height / img_h)
@@ -106,7 +108,9 @@ def export_translation_pdf(
         if isinstance(ev, dict) and ev_engine in ("htr", "manual"):
             segs = ev.get("segments", [])
             if isinstance(segs, list):
-                joined = "\n".join(str(s.get("text", "")).strip() for s in segs if isinstance(s, dict))
+                joined = "\n".join(
+                    str(s.get("text", "")).strip() for s in segs if isinstance(s, dict)
+                )
                 recogn_text = joined.strip() or recogn_text
         if not recogn_text:
             recogn_text = (
@@ -136,7 +140,10 @@ def export_translation_pdf(
                 tr = "[Loaded from local translation cache]\n" + tr
         elif rec.get("translation_error"):
             tr = f"(Google Translate) {rec.get('translation_error')}"
-        elif isinstance(rec.get("translation_meta"), dict) and rec["translation_meta"].get("reason") == "ocr_confidence_below_threshold":
+        elif (
+            isinstance(rec.get("translation_meta"), dict)
+            and rec["translation_meta"].get("reason") == "ocr_confidence_below_threshold"
+        ):
             min_conf = rec["translation_meta"].get("ocr_translation_confidence_min")
             seen = rec["translation_meta"].get("ocr_confidence")
             tr = (

@@ -175,7 +175,5 @@ class JobStore:
 
     def count_by_state(self) -> dict[str, int]:
         with self._connect() as conn:
-            rows = conn.execute(
-                "SELECT state, COUNT(*) FROM jobs GROUP BY state"
-            ).fetchall()
+            rows = conn.execute("SELECT state, COUNT(*) FROM jobs GROUP BY state").fetchall()
         return {str(s): int(c) for s, c in rows}

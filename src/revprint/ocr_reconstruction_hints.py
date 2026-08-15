@@ -47,7 +47,9 @@ def build_ocr_reconstruction_hints(
             mask[y0:y1, x0:x1] = 255
             kept.append(item)
     _save_gray(mask_path, mask)
-    json_path.write_text(json.dumps({"words": kept}, ensure_ascii=False, indent=2), encoding="utf-8")
+    json_path.write_text(
+        json.dumps({"words": kept}, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     return {
         "ocr_reconstruct_hint_enabled": bool(enable),
         "ocr_reconstruct_hint_confidence_min": float(confidence_min),

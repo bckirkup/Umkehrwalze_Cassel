@@ -77,6 +77,3 @@ known-first-party = ["revprint"]
 "src/revprint/line_artifact_refine.py" = ["C901"]
 # C901: export_translation_pdf has measured legacy complexity 17; remove when simplified.
 "src/revprint/pdf_export.py" = ["C901"]
-
-[tool.ruff.format]
-quote-style = "double"

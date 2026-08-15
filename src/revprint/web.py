@@ -317,7 +317,7 @@ def create_app() -> Flask:
         )
 
     @app.get("/htr")
-    def htr_editor() -> str:
+    def htr_editor() -> object:
         run_param = request.args.get("run", "")
         try:
             run = _safe_resolve_run(run_param)

@@ -112,7 +112,9 @@ def apply_ghost_suppression(
     meta.update(plausibility)
     meta["plausibility_applied"] = True
     protect_path = Path(str(plausibility["plausibility_protect_mask_path"]))
-    protect_mask = np.asarray(Image.open(protect_path).convert("L"), dtype=np.uint8).astype(np.float32) / 255.0
+    protect_mask = (
+        np.asarray(Image.open(protect_path).convert("L"), dtype=np.uint8).astype(np.float32) / 255.0
+    )
     # suppress only non-plausible regions and where front ink confidence is weak
     lift = combined_ghost * (1.0 - protect_mask) * (1.0 - np.clip(front_ink * 2.2, 0.0, 1.0))
     lift_energy = float(np.mean(lift))

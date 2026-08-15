@@ -23,6 +23,7 @@ try:
 
     _HAS_GPU = torch.cuda.is_available()
 except ImportError:
+    # GPU acceleration is optional.
     pass
 
 
@@ -59,8 +60,8 @@ def _sauvola_ink_mask_gpu(
 
     kernel = (window_size, window_size)
     local_mean = kornia.filters.box_blur(tensor, kernel)
-    local_sq_mean = kornia.filters.box_blur(tensor ** 2, kernel)
-    local_std = torch.sqrt(torch.clamp(local_sq_mean - local_mean ** 2, min=0.0))
+    local_sq_mean = kornia.filters.box_blur(tensor**2, kernel)
+    local_std = torch.sqrt(torch.clamp(local_sq_mean - local_mean**2, min=0.0))
 
     r = 128.0  # Sauvola dynamic range
     threshold = local_mean * (1.0 + k * (local_std / r - 1.0))

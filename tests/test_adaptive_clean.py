@@ -12,9 +12,9 @@ from revprint.adaptive_clean import adaptive_clean_page, extract_ink_on_white, s
 def _make_gray_image(w: int = 200, h: int = 300) -> np.ndarray:
     """Create a test grayscale image with ink on paper."""
     arr = np.full((h, w), 215, dtype=np.uint8)
-    arr[50:55, 30:170] = 40   # Dark line
-    arr[80:85, 30:170] = 45   # Another line
-    arr[:, :20] = 180          # Spine shadow
+    arr[50:55, 30:170] = 40  # Dark line
+    arr[80:85, 30:170] = 45  # Another line
+    arr[:, :20] = 180  # Spine shadow
     return arr
 
 

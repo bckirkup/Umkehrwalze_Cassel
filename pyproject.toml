@@ -49,12 +49,24 @@ include = ["src/revprint", "README.md", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=src/revprint --cov-report=term-missing --cov-fail-under=70"
+addopts = "--cov=src/revprint --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=70"
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "ARG", "C90"]
 ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.isort]
+known-first-party = ["revprint"]
+
+[tool.ruff.lint.per-file-ignores]
+# ARG001: QA keeps facing_path as a compatibility-stable callback keyword.
+"src/revprint/batch_pipeline.py" = ["ARG001"]
+# ARG001: max_dim remains a compatibility-stable public tuning parameter.
+"src/revprint/ghost_cross_page.py" = ["ARG001"]

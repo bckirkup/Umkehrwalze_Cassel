@@ -81,7 +81,7 @@ def _component_plausibility(
         evals = np.linalg.eigvals(cov)
         evals = np.sort(np.real(evals))
         elong = float(np.sqrt((evals[-1] + 1e-6) / (evals[0] + 1e-6)))
-        comp_u8 = (comp.astype(np.uint8) * 255)
+        comp_u8 = comp.astype(np.uint8) * 255
         # iterative thinning approximation (expensive but robust)
         eroded = comp_u8.copy()
         opened = np.zeros_like(comp_u8)

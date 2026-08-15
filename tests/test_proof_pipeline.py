@@ -107,9 +107,7 @@ def test_resolve_translation_pipeline_manual_sidecar() -> None:
     with tempfile.TemporaryDirectory() as d:
         pages = Path(d)
         stem = "page_0001"
-        (pages / f"{stem}.translation_source.txt").write_text(
-            "Archivgut", encoding="utf-8"
-        )
+        (pages / f"{stem}.translation_source.txt").write_text("Archivgut", encoding="utf-8")
         gray = Image.new("L", (32, 32), 255)
         _en, src_type, meta = _resolve_translation_pipeline(
             pages, stem, pages / f"{stem}.jpg", gray, load_settings()
@@ -165,9 +163,13 @@ def test_resolve_translation_pipeline_prefers_gemini_seed_sidecar() -> None:
         stem = "page_0001"
         source = pages / f"{stem}.jpg"
         source.write_bytes(b"fake")
-        (pages / f"{stem} translation and commentary.txt").write_text("Gemini seed text", encoding="utf-8")
+        (pages / f"{stem} translation and commentary.txt").write_text(
+            "Gemini seed text", encoding="utf-8"
+        )
         gray = Image.new("L", (16, 16), 180)
-        tr, src_type, meta = _resolve_translation_pipeline(pages, stem, source, gray, load_settings())
+        tr, src_type, meta = _resolve_translation_pipeline(
+            pages, stem, source, gray, load_settings()
+        )
         assert src_type == "gemini_seed"
         assert tr == "Gemini seed text"
         assert str(meta.get("gemini_seed_path", "")).endswith("translation and commentary.txt")
@@ -196,7 +198,9 @@ def test_resolve_translation_pipeline_gemini_seed_wins_over_german_seed() -> Non
         source = pages / f"{stem}.jpg"
         source.write_bytes(b"fake")
         (pages / f"{stem} german.txt").write_text("Anno 1742", encoding="utf-8")
-        (pages / f"{stem} translation and commentary.txt").write_text("Full commentary", encoding="utf-8")
+        (pages / f"{stem} translation and commentary.txt").write_text(
+            "Full commentary", encoding="utf-8"
+        )
         gray = Image.new("L", (16, 16), 180)
         settings = load_settings()
         with patch("revprint.proof.translate_de_to_en") as mock_tr:

@@ -19,7 +19,7 @@ def _make_curved_text_image(w: int = 400, h: int = 600) -> np.ndarray:
             curve = int(8 * ((x - w / 2) / (w / 2)) ** 2)
             y = y_base + curve
             if 0 <= y < h and 0 <= y + 2 < h:
-                arr[y: y + 3, x] = 50
+                arr[y : y + 3, x] = 50
     return arr
 
 

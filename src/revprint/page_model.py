@@ -81,7 +81,7 @@ def _detect_spine_side(path: Path) -> Literal["left", "right", "unknown"]:
                 new_h = max(1, int(gray.size[1] * scale))
                 gray = gray.resize((new_w, new_h), Image.Resampling.LANCZOS)
             arr = np.asarray(gray, dtype=np.float32)
-        h, w = arr.shape
+        _, w = arr.shape
         band = max(4, int(w * 0.15))
         left_mean = float(np.mean(arr[:, :band]))
         right_mean = float(np.mean(arr[:, -band:]))

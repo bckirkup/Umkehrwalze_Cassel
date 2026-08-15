@@ -31,7 +31,9 @@ def _full_image_bbox(size_wh: tuple[int, int]) -> tuple[int, int, int, int]:
     return (0, 0, int(max(0, w)), int(max(0, h)))
 
 
-def _line_bbox_for_index(size_wh: tuple[int, int], idx: int, total: int) -> tuple[int, int, int, int]:
+def _line_bbox_for_index(
+    size_wh: tuple[int, int], idx: int, total: int
+) -> tuple[int, int, int, int]:
     w, h = size_wh
     line_count = max(1, int(total))
     line_h = max(1, int(round(h / line_count)))

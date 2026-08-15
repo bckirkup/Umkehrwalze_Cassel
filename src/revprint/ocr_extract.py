@@ -45,7 +45,9 @@ def _preprocess_variants(gray: Image.Image) -> list[tuple[str, Image.Image]]:
         ("autocontrast_only", base),
         (
             "high_contrast_bw",
-            ImageOps.autocontrast(gray, cutoff=2.0).point(lambda p: 255 if p > 165 else 0, mode="L"),
+            ImageOps.autocontrast(gray, cutoff=2.0).point(
+                lambda p: 255 if p > 165 else 0, mode="L"
+            ),
         ),
     ]
 
@@ -97,7 +99,9 @@ def _normalize_token(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", text.lower())
 
 
-def ocr_word_hypotheses(gray: Image.Image) -> tuple[list[OCRWordHypothesis], list[OCRPhraseHypothesis]]:
+def ocr_word_hypotheses(
+    gray: Image.Image,
+) -> tuple[list[OCRWordHypothesis], list[OCRPhraseHypothesis]]:
     if pytesseract is None:
         return [], []
     words: list[OCRWordHypothesis] = []

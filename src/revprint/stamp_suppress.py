@@ -58,9 +58,7 @@ def detect_stamp_mask(
 
     # Remove tiny components (noise).
     if min_component_area > 0:
-        n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
-            combined_mask, connectivity=8
-        )
+        n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(combined_mask, connectivity=8)
         for i in range(1, n_labels):
             if stats[i, cv2.CC_STAT_AREA] < min_component_area:
                 combined_mask[labels == i] = 0
@@ -82,12 +80,10 @@ def detect_stamp_mask_chroma(
     l_chan = lab[:, :, 0]
     a_chan = lab[:, :, 1] - 128.0
     b_chan = lab[:, :, 2] - 128.0
-    chroma = np.sqrt(a_chan ** 2 + b_chan ** 2)
+    chroma = np.sqrt(a_chan**2 + b_chan**2)
 
     mask = (
-        (chroma > chroma_threshold)
-        & (l_chan > lightness_range[0])
-        & (l_chan < lightness_range[1])
+        (chroma > chroma_threshold) & (l_chan > lightness_range[0]) & (l_chan < lightness_range[1])
     ).astype(np.uint8) * 255
 
     if min_component_area > 0:

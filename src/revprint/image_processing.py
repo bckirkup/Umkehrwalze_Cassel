@@ -98,7 +98,9 @@ def detect_page_bbox(img: Image.Image) -> tuple[int, int, int, int]:
     return (left, top, right, bottom)
 
 
-def trim_bright_scanner_edges(img: Image.Image, bbox: tuple[int, int, int, int]) -> tuple[int, int, int, int]:
+def trim_bright_scanner_edges(
+    img: Image.Image, bbox: tuple[int, int, int, int]
+) -> tuple[int, int, int, int]:
     w, h = img.size
     if bbox != (0, 0, w, h):
         return bbox

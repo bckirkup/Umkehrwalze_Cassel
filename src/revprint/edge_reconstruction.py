@@ -204,13 +204,16 @@ def apply_edge_reconstruction(
     cand = _load_gray(candidate_mask_path).astype(np.float32) / 255.0
     if cand.shape != gray.shape:
         # nearest for mask semantics
-        cand = np.asarray(
-            Image.fromarray((cand * 255).astype(np.uint8), mode="L").resize(
-                (gray.shape[1], gray.shape[0]),
-                Image.Resampling.NEAREST,
-            ),
-            dtype=np.uint8,
-        ).astype(np.float32) / 255.0
+        cand = (
+            np.asarray(
+                Image.fromarray((cand * 255).astype(np.uint8), mode="L").resize(
+                    (gray.shape[1], gray.shape[0]),
+                    Image.Resampling.NEAREST,
+                ),
+                dtype=np.uint8,
+            ).astype(np.float32)
+            / 255.0
+        )
     if float(np.max(cand)) < 1e-3:
         _save_gray(after, gray)
         meta["edge_reconstruct_reason"] = "empty_candidate_mask"

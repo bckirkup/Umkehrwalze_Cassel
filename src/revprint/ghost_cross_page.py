@@ -54,12 +54,12 @@ def _register_facing(
     b = facing_gray_flipped[:ch, :cw]
 
     try:
-        shift, error, _diffphase = phase_cross_correlation(
-            a, b, upsample_factor=upsample_factor
-        )
+        shift, error, _diffphase = phase_cross_correlation(a, b, upsample_factor=upsample_factor)
         shift_yx = (float(shift[0]), float(shift[1]))
         max_shift = max(ch, cw) * 0.12
-        success = (error <= 0.9) and (abs(shift_yx[0]) <= max_shift) and (abs(shift_yx[1]) <= max_shift)
+        success = (
+            (error <= 0.9) and (abs(shift_yx[0]) <= max_shift) and (abs(shift_yx[1]) <= max_shift)
+        )
         return shift_yx, float(error), success
     except Exception:
         return (0.0, 0.0), 1.0, False
@@ -70,7 +70,9 @@ def _shift_image(img: np.ndarray, shift_yx: tuple[float, float]) -> np.ndarray:
     dy, dx = shift_yx
     m = np.float32([[1, 0, dx], [0, 1, dy]])
     return cv2.warpAffine(
-        img, m, (img.shape[1], img.shape[0]),
+        img,
+        m,
+        (img.shape[1], img.shape[0]),
         flags=cv2.INTER_LINEAR,
         borderValue=255.0,
     )
@@ -103,13 +105,17 @@ def subtract_ghost_facing(
     if reg_scale < 1.0:
         page_small = cv2.resize(
             page_gray,
-            (max(1, int(page_gray.shape[1] * reg_scale)),
-             max(1, int(page_gray.shape[0] * reg_scale))),
+            (
+                max(1, int(page_gray.shape[1] * reg_scale)),
+                max(1, int(page_gray.shape[0] * reg_scale)),
+            ),
         )
         facing_small = cv2.resize(
             facing_flipped,
-            (max(1, int(facing_flipped.shape[1] * reg_scale)),
-             max(1, int(facing_flipped.shape[0] * reg_scale))),
+            (
+                max(1, int(facing_flipped.shape[1] * reg_scale)),
+                max(1, int(facing_flipped.shape[0] * reg_scale)),
+            ),
         )
     else:
         page_small = page_gray
@@ -189,7 +195,7 @@ def nmf_ghost_separate(
     positions: list[tuple[int, int]] = []
     for y in range(0, sh - patch_size + 1, patch_size // 2):
         for x in range(0, sw - patch_size + 1, patch_size // 2):
-            patch = inverted[y: y + patch_size, x: x + patch_size].ravel()
+            patch = inverted[y : y + patch_size, x : x + patch_size].ravel()
             patches.append(patch)
             positions.append((y, x))
 
@@ -215,8 +221,8 @@ def nmf_ghost_separate(
         for patch_idx, (y, x) in enumerate(positions):
             patch_recon = coeffs[patch_idx, comp_idx] * components[comp_idx]
             patch_2d = patch_recon.reshape(patch_size, patch_size)
-            recon[y: y + patch_size, x: x + patch_size] += patch_2d
-            count[y: y + patch_size, x: x + patch_size] += 1.0
+            recon[y : y + patch_size, x : x + patch_size] += patch_2d
+            count[y : y + patch_size, x : x + patch_size] += 1.0
         count = np.clip(count, 1.0, None)
         recon /= count
         component_images.append(recon)

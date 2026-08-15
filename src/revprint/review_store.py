@@ -110,7 +110,9 @@ class ReviewStore:
             )
         return rid
 
-    def list_decisions(self, *, project_slug: str, volume_slug: str, run_id: str | None = None) -> list[ReviewDecision]:
+    def list_decisions(
+        self, *, project_slug: str, volume_slug: str, run_id: str | None = None
+    ) -> list[ReviewDecision]:
         with self._connect() as conn:
             if run_id is None:
                 rows = conn.execute(
@@ -148,8 +150,12 @@ class ReviewStore:
             for r in rows
         ]
 
-    def export_jsonl(self, output_path: Path, *, project_slug: str, volume_slug: str, run_id: str | None = None) -> Path:
-        rows = self.list_decisions(project_slug=project_slug, volume_slug=volume_slug, run_id=run_id)
+    def export_jsonl(
+        self, output_path: Path, *, project_slug: str, volume_slug: str, run_id: str | None = None
+    ) -> Path:
+        rows = self.list_decisions(
+            project_slug=project_slug, volume_slug=volume_slug, run_id=run_id
+        )
         out = Path(output_path).resolve()
         out.parent.mkdir(parents=True, exist_ok=True)
         payload = "\n".join(json.dumps(row.to_meta(), ensure_ascii=False) for row in rows)

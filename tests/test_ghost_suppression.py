@@ -65,9 +65,10 @@ def test_ghost_suppression_gated_by_confidence() -> None:
             confidence_min=0.99,
         )
         assert meta["ghost_suppression_applied"] is False
-        assert "no_eligible" in str(meta.get("ghost_suppression_reason", "")).lower() or meta.get(
-            "ghost_suppression_reason"
-        ) == "no_eligible_interactions"
+        assert (
+            "no_eligible" in str(meta.get("ghost_suppression_reason", "")).lower()
+            or meta.get("ghost_suppression_reason") == "no_eligible_interactions"
+        )
 
 
 def test_ghost_suppression_emits_plausibility_artifacts() -> None:

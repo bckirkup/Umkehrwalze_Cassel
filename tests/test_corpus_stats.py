@@ -17,8 +17,8 @@ def _make_test_image(path: Path, w: int = 200, h: int = 300) -> None:
     arr[80:85, 30:170, :] = 45
     # A red 'stamp' region.
     arr[10:25, 10:25, 0] = 200  # R
-    arr[10:25, 10:25, 1] = 50   # G
-    arr[10:25, 10:25, 2] = 50   # B
+    arr[10:25, 10:25, 1] = 50  # G
+    arr[10:25, 10:25, 2] = 50  # B
     # Left spine shadow.
     arr[:, :20, :] = 170
     Image.fromarray(arr, mode="RGB").save(path)

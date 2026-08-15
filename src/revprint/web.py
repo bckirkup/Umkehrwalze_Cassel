@@ -39,13 +39,6 @@ def _output_roots() -> list[Path]:
     return out
 
 
-def _path_allowed(path: Path) -> bool:
-    for root in _output_roots():
-        if path == root or root in path.parents:
-            return True
-    return False
-
-
 def _safe_resolve_run(run_str: str) -> Path | None:
     if not run_str:
         return None
@@ -63,14 +56,8 @@ def _link(path: Path, label: str | None = None) -> str:
     return f'<a href="/file?path={quote(str(path))}">{html.escape(label)}</a>'
 
 
-def _invalid_path(_error: ValueError) -> tuple[str, int]:
-    return "Invalid run path.", 400
-
-
 def create_app() -> Flask:
     app = Flask(__name__)
-
-    app.register_error_handler(ValueError, _invalid_path)
 
     @app.get("/")
     def index() -> str:
@@ -332,7 +319,10 @@ def create_app() -> Flask:
     @app.get("/htr")
     def htr_editor() -> str:
         run_param = request.args.get("run", "")
-        run = _safe_resolve_run(run_param)
+        try:
+            run = _safe_resolve_run(run_param)
+        except ValueError:
+            return "Invalid run path.", 400
         if run is None:
             latest = _latest_run(Path(os.environ.get("RPK_OUTPUT_ROOT", "outputs/proof")).resolve())
             run = latest
@@ -420,7 +410,10 @@ def create_app() -> Flask:
 
     @app.post("/htr/save")
     def htr_save() -> object:
-        run = _safe_resolve_run(request.form.get("run", ""))
+        try:
+            run = _safe_resolve_run(request.form.get("run", ""))
+        except ValueError:
+            return "Invalid run path.", 400
         if run is None:
             return "Invalid run path.", 400
         stem = request.form.get("stem", "").strip()

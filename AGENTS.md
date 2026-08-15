@@ -1,5 +1,5 @@
 # AGENTS.md — AI Agent Guidelines for Umkehrwalze_Cassel (revprint)
-
+  
 ## Repository Purpose
 Image processing pipeline for historical manuscript digitisation. Transforms
 raw archival scans (JPEG) into clean ink-on-white reproductions suitable for

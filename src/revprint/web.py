@@ -324,6 +324,7 @@ def create_app() -> Flask:
             start=start,
             profile=profile,
         )
+
         return redirect(
             f"/?project={quote(project_slug)}&volume={quote(volume_slug)}&profile={quote(profile)}"
         )

@@ -211,7 +211,7 @@ def create_app() -> Flask:
                     <h3>Manifest diagnostics</h3>
                     <table>
                       <tr><th>Page</th><th>Registration</th><th>Ghost suppression</th><th>Dewarp</th><th>Translation source</th></tr>
-                      {''.join(rows)}
+                      {"".join(rows)}
                     </table>
                     """
 
@@ -227,14 +227,14 @@ def create_app() -> Flask:
             latest_html += f"""
             <p><a href="/htr?run={quote(str(latest))}">Open HTR Editor for this run</a></p>
             <h3>Cleaned Page Images</h3>
-            <ul>{''.join(image_links)}</ul>
+            <ul>{"".join(image_links)}</ul>
             <h3>Ghost suppression review</h3>
-            <ul>{''.join(ghost_links) if ghost_links else '<li><em>None yet</em></li>'}</ul>
+            <ul>{"".join(ghost_links) if ghost_links else "<li><em>None yet</em></li>"}</ul>
             <h3>Dewarped previews</h3>
-            <ul>{''.join(dewarp_links) if dewarp_links else '<li><em>None yet</em></li>'}</ul>
+            <ul>{"".join(dewarp_links) if dewarp_links else "<li><em>None yet</em></li>"}</ul>
             <h3>Interaction Analysis</h3>
             <p><small>Red overlays are mirrored neighbor-page candidates, useful for reviewing offset/ghost ink.</small></p>
-            <ul>{''.join(interaction_links)}</ul>
+            <ul>{"".join(interaction_links)}</ul>
             {diag_html}
             """
 
@@ -264,14 +264,14 @@ def create_app() -> Flask:
           <p><strong>Input root:</strong> <code>{html.escape(str(effective_root))}</code></p>
           <p><strong>JPG count:</strong> {count}</p>
           <p><strong>Job store:</strong> <code>{html.escape(str(job_store_path))}</code></p>
-          {f'<p class="error">{html.escape(scan_error)}</p>' if scan_error else ''}
+          {f'<p class="error">{html.escape(scan_error)}</p>' if scan_error else ""}
 
           <form method="post" action="/process">
             <label>Project
-              <select name="project">{''.join(project_options)}</select>
+              <select name="project">{"".join(project_options)}</select>
             </label>
             <label>Volume
-              <select name="volume">{''.join(volume_options)}</select>
+              <select name="volume">{"".join(volume_options)}</select>
             </label>
             <label>Profile
               <select name="profile">
